@@ -1,0 +1,2 @@
+docker build . -t ghcr.io/nemesysdata/download_stocks:latest
+docker push ghcr.io/nemesysdata/download_stocks:latest

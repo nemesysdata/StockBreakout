@@ -1,0 +1,4 @@
+#!/bin/zsh
+kubectl create namespace kafka
+kubens kafka
+helm upgrade --install strimzi-cluster-operator oci://quay.io/strimzi-helm/strimzi-kafka-operator

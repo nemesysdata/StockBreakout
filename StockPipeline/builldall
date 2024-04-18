@@ -1,0 +1,3 @@
+#!/bin/zsh
+docker build -t flink-base:latest -f Dockerfile.base .
+docker build -t stock-pipeline:latest .

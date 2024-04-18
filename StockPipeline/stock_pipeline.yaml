@@ -1,0 +1,268 @@
+################################################################################
+#  Licensed to the Apache Software Foundation (ASF) under one
+#  or more contributor license agreements.  See the NOTICE file
+#  distributed with this work for additional information
+#  regarding copyright ownership.  The ASF licenses this file
+#  to you under the Apache License, Version 2.0 (the
+#  "License"); you may not use this file except in compliance
+#  with the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
+
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: stock-pipeline-ingestion
+  namespace: flink
+spec:
+  image: stock-pipeline:latest
+  flinkVersion: v1_17
+  ingress:
+    template: "pipeline-ingestion.192-168-81-100.traefik.me"  
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "1"
+  serviceAccount: flink
+  podTemplate:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: pod-template
+      spec:
+        containers:
+          # Do not change the main container name
+          - name: flink-main-container
+            env:
+              - name: STEP
+                value: "INGESTION"
+  jobManager:
+    resource:
+      memory: "1024m"
+      cpu: 0.8
+  taskManager:
+    resource:
+      memory: "1024m"
+      cpu: 0.8
+  job:
+    jarURI: local:///opt/flink/opt/flink-python_2.12-1.16.1.jar # Note, this jarURI is actually a placeholder
+    entryClass: "org.apache.flink.client.python.PythonDriver"
+    args: ["-pyclientexec", "/usr/local/bin/python3", "-py", "/opt/flink/usrlib/stock_pipeline.py"]
+    parallelism: 1
+    upgradeMode: stateless
+---
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: stock-pipeline-agg-aapl
+  namespace: flink
+spec:
+  image: stock-pipeline:latest
+  flinkVersion: v1_17
+  ingress:
+    template: "pipeline-agg-aapl.192-168-81-100.traefik.me"  
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "1"
+  serviceAccount: flink
+  podTemplate:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: pod-template
+      spec:
+        containers:
+          # Do not change the main container name
+          - name: flink-main-container
+            env:
+              - name: STEP
+                value: "AGGREGATE"
+              - name: TOPIC
+                value: "aapl"
+  jobManager:
+    resource:
+      memory: "1024m"
+      cpu: 0.8
+  taskManager:
+    resource:
+      memory: "1024m"
+      cpu: 0.8
+  job:
+    jarURI: local:///opt/flink/opt/flink-python_2.12-1.16.1.jar # Note, this jarURI is actually a placeholder
+    entryClass: "org.apache.flink.client.python.PythonDriver"
+    args: ["-pyclientexec", "/usr/local/bin/python3", "-py", "/opt/flink/usrlib/stock_pipeline.py"]
+    parallelism: 1
+    upgradeMode: stateless
+---
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: stock-pipeline-agg-amzn
+  namespace: flink
+spec:
+  image: stock-pipeline:latest
+  flinkVersion: v1_17
+  ingress:
+    template: "pipeline-agg-amzn.192-168-81-100.traefik.me"  
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "1"
+  serviceAccount: flink
+  podTemplate:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: pod-template
+      spec:
+        containers:
+          # Do not change the main container name
+          - name: flink-main-container
+            env:
+              - name: STEP
+                value: "AGGREGATE"
+              - name: TOPIC
+                value: "amzn"
+  jobManager:
+    resource:
+      memory: "1024m"
+      cpu: 0.8
+  taskManager:
+    resource:
+      memory: "1024m"
+      cpu: 0.8
+  job:
+    jarURI: local:///opt/flink/opt/flink-python_2.12-1.16.1.jar # Note, this jarURI is actually a placeholder
+    entryClass: "org.apache.flink.client.python.PythonDriver"
+    args: ["-pyclientexec", "/usr/local/bin/python3", "-py", "/opt/flink/usrlib/stock_pipeline.py"]
+    parallelism: 1
+    upgradeMode: stateless
+---
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: stock-pipeline-agg-meta
+  namespace: flink
+spec:
+  image: stock-pipeline:latest
+  flinkVersion: v1_17
+  ingress:
+    template: "pipeline-agg-meta.192-168-81-100.traefik.me"  
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "1"
+  serviceAccount: flink
+  podTemplate:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: pod-template
+      spec:
+        containers:
+          # Do not change the main container name
+          - name: flink-main-container
+            env:
+              - name: STEP
+                value: "AGGREGATE"
+              - name: TOPIC
+                value: "meta"
+  jobManager:
+    resource:
+      memory: "1024m"
+      cpu: 0.8
+  taskManager:
+    resource:
+      memory: "1024m"
+      cpu: 0.8
+  job:
+    jarURI: local:///opt/flink/opt/flink-python_2.12-1.16.1.jar # Note, this jarURI is actually a placeholder
+    entryClass: "org.apache.flink.client.python.PythonDriver"
+    args: ["-pyclientexec", "/usr/local/bin/python3", "-py", "/opt/flink/usrlib/stock_pipeline.py"]
+    parallelism: 1
+    upgradeMode: stateless
+---
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: stock-pipeline-agg-msft
+  namespace: flink
+spec:
+  image: stock-pipeline:latest
+  flinkVersion: v1_17
+  ingress:
+    template: "pipeline-agg-msft.192-168-81-100.traefik.me"  
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "1"
+  serviceAccount: flink
+  podTemplate:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: pod-template
+      spec:
+        containers:
+          # Do not change the main container name
+          - name: flink-main-container
+            env:
+              - name: STEP
+                value: "AGGREGATE"
+              - name: TOPIC
+                value: "msft"
+  jobManager:
+    resource:
+      memory: "1024m"
+      cpu: 0.8
+  taskManager:
+    resource:
+      memory: "1024m"
+      cpu: 0.8
+  job:
+    jarURI: local:///opt/flink/opt/flink-python_2.12-1.16.1.jar # Note, this jarURI is actually a placeholder
+    entryClass: "org.apache.flink.client.python.PythonDriver"
+    args: ["-pyclientexec", "/usr/local/bin/python3", "-py", "/opt/flink/usrlib/stock_pipeline.py"]
+    parallelism: 1
+    upgradeMode: stateless
+---
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: stock-pipeline-agg-tsla
+  namespace: flink
+spec:
+  image: stock-pipeline:latest
+  flinkVersion: v1_17
+  ingress:
+    template: "pipeline-agg-tsla.192-168-81-100.traefik.me"  
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "1"
+  serviceAccount: flink
+  podTemplate:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: pod-template
+      spec:
+        containers:
+          # Do not change the main container name
+          - name: flink-main-container
+            env:
+              - name: STEP
+                value: "AGGREGATE"
+              - name: TOPIC
+                value: "tsla"
+  jobManager:
+    resource:
+      memory: "1024m"
+      cpu: 0.8
+  taskManager:
+    resource:
+      memory: "1024m"
+      cpu: 0.8
+  job:
+    jarURI: local:///opt/flink/opt/flink-python_2.12-1.16.1.jar # Note, this jarURI is actually a placeholder
+    entryClass: "org.apache.flink.client.python.PythonDriver"
+    args: ["-pyclientexec", "/usr/local/bin/python3", "-py", "/opt/flink/usrlib/stock_pipeline.py"]
+    parallelism: 1
+    upgradeMode: stateless
+---

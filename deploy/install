@@ -1,0 +1,43 @@
+#!/bin/zsh
+#
+# Adidionar Repositórios do Helm
+#
+helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.7.0/
+helm repo add kafka-ui https://provectus.github.io/kafka-ui-charts
+#
+# Instalar o Cert-Manager
+#
+kubectl apply -f certmanager.yaml
+kubectl rollout status deployment/cert-manager -n cert-manager
+kubectl rollout status deployment/cert-manager-cainjector -n cert-manager
+kubectl rollout status deployment/cert-manager-webhook -n cert-manager
+#
+# Instalar o Postgres Operator
+#
+kubectl create ns postgres-operator
+kubens postgres-operator
+kubectl apply -f postgres-operator.yaml --server-side=true
+kubectl rollout status deployment/pgo -n postgres-operator
+#
+# Criar o DW
+#
+kubectl create ns stock-dw
+kubens stock-dw
+kubectl apply -f stock-dw.yaml
+#
+# Instalar o Flink Operator
+#
+helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator --namespace flink --create-namespace
+kubectl rollout status deployment/flink-kubernetes-operator -n flink
+# kubectl apply -f flink-session.yaml
+#
+# Instalar o Strimzi e criar o cluster Kafka
+#
+kubectl create namespace kafka
+kubens kafka
+helm upgrade --install strimzi-cluster-operator oci://quay.io/strimzi-helm/strimzi-kafka-operator
+kubectl rollout status deployment/strimzi-cluster-operator -n kafka
+kubectl apply -f kafka-kraft.yaml
+helm upgrade --install kafka-ui kafka-ui/kafka-ui -f kafkaui-values.yaml
+kubectl rollout status deployment/kafka-ui -n kafka
+
