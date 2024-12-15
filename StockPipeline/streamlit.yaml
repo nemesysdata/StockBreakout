@@ -80,7 +80,7 @@ spec:
             - containerPort: 8501
           # command to enter in ~/app/Dasboard directory and run the streamlit app inside the poetry shell
           command: ["/bin/sh"]
-          args: ["-c", "cd /root/app/Dashboard && poetry install && poetry run streamlit run dashboard.py"]
+          args: ["-c", "cd /root/app && git pull && cd /root/app/Dashboard && poetry install && poetry run streamlit run dashboard.py"]
 ---
 #Service to export in ingress the streamlit app
 apiVersion: v1

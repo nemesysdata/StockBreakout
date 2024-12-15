@@ -2,11 +2,11 @@ import sqlalchemy
 import pandas as pd
 import pandas.io.sql as psql
 
-from k8s import K8S
+# from k8s import K8S
 
 # gets loadbalancer ip from k8s service called postgres-dw-ha on namespace stock-dw
 
-k8s = K8S()
+# k8s = K8S()
 POSTGRES_HOST = 'psql-dw-postgresql.stock-dw.svc.local' #k8s.get_service_ip('psql-dw-postgresql', 'stock-dw')
 POSTGRES_PORT = '5432'
 POSTGRES_USER = 'postgres'
