@@ -4,11 +4,10 @@ VERSION=1.0.1
 
 # eval $(minikube -p minikube docker-env)
 
+docker build -t nemesysdata/stock-ubuntu:latest -t nemesysdata/stock-ubuntu:$VERSION -f Dockerfile.ubuntu .
 docker build -t nemesysdata/flink-base:latest -t nemesysdata/flink-base:$VERSION -f Dockerfile.base .
 docker build -t nemesysdata/stock-pipeline:latest -t nemesysdata/stock-pipeline:$VERSION .
 
-docker push nemesysdata/flink-base:latest 
-docker push nemesysdata/flink-base:$VERSION
-docker push nemesysdata/stock-pipeline:latest
-docker push nemesysdata/stock-pipeline:$VERSION
-
+docker push nemesysdata/flink-base --all-tags
+docker push nemesysdata/stock-pipeline --all-tags
+docker push nemesysdata/stock-ubuntu --all-tags

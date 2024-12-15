@@ -1,0 +1,34 @@
+# Use the official Ubuntu image as the base image
+FROM ubuntu:latest
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y \
+    git \
+    python3 \
+    python3-pip \
+    golang-go \
+    curl \
+    && apt-get clean
+
+# Install Poetry
+RUN curl -sSL https://install.python-poetry.org | python3 -
+
+# Add Poetry to PATH
+ENV PATH="/root/.local/bin:$PATH"
+
+# Create app directory
+RUN mkdir -p /root/app
+
+# Clone or update the repository
+RUN git clone https://github.com/nemesysdata/StockBreakout.git /root/app || \
+    (cd /root/app && git pull)
+
+# Set the working directory
+WORKDIR /root/app
+
+# Run an infinite sleep
+CMD ["bash", "-c", "while true; do sleep 1000; done"]

@@ -7,7 +7,7 @@ from k8s import K8S
 # gets loadbalancer ip from k8s service called postgres-dw-ha on namespace stock-dw
 
 k8s = K8S()
-POSTGRES_HOST = k8s.get_service_ip('psql-dw-postgresql', 'stock-dw')
+POSTGRES_HOST = 'psql-dw-postgresql.stock-dw.svc.local' #k8s.get_service_ip('psql-dw-postgresql', 'stock-dw')
 POSTGRES_PORT = '5432'
 POSTGRES_USER = 'postgres'
 POSTGRES_PASSWORD = 'mysecret'
