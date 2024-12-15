@@ -2,10 +2,15 @@ import sqlalchemy
 import pandas as pd
 import pandas.io.sql as psql
 
-POSTGRES_HOST = '192.168.81.106'
+from k8s import K8S
+
+# gets loadbalancer ip from k8s service called postgres-dw-ha on namespace stock-dw
+
+k8s = K8S()
+POSTGRES_HOST = k8s.get_service_ip('psql-dw-postgresql', 'stock-dw')
 POSTGRES_PORT = '5432'
 POSTGRES_USER = 'postgres'
-POSTGRES_PASSWORD = 'SPNyVLLeqd3qLE8lgRw04Kua'
+POSTGRES_PASSWORD = 'mysecret'
 POSTGRES_DBNAME = 'dw'
 #
 # Connectar to database

@@ -60,7 +60,7 @@ func Send2Kafka(pw progress.Writer, name string, stocks []Stock, kafkaReady chan
 	pw.AppendTracker(&tracker)
 	fmt.Printf("%s waitting kafka\n", name)
 	// Connect to Kafka
-	conn, err := kafka.DialLeader(context.Background(), "tcp", "192.168.81.102:9092", topic, 0)
+	conn, err := kafka.DialLeader(context.Background(), "tcp", "51.159.206.16:9092", topic, 0)
 	if err != nil {
 		log.Fatal("failed to dial leader:", err)
 	}

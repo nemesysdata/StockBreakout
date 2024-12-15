@@ -1,3 +1,14 @@
-#!/bin/zsh
-docker build -t flink-base:latest -f Dockerfile.base .
-docker build -t stock-pipeline:latest .
+#!/bin/bash
+
+VERSION=1.0.0
+
+# eval $(minikube -p minikube docker-env)
+
+docker build -t nemesysdata/flink-base:latest -t nemesysdata/flink-base:$VERSION -f Dockerfile.base .
+docker build -t nemesysdata/stock-pipeline:latest -t nemesysdata/stock-pipeline:$VERSION .
+
+docker push nemesysdata/flink-base:latest 
+docker push nemesysdata/flink-base:$VERSION
+docker push nemesysdata/stock-pipeline:latest
+docker push nemesysdata/stock-pipeline:$VERSION
+

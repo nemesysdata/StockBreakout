@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "dashboard"
+version = "0.1.0"
+description = ""
+authors = ["Fernando Adriano Machado"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+streamlit = "^1.40.2"
+streamlit-autorefresh = "^1.0.1"
+vega-datasets = "^0.9.0"
+sqlalchemy = "^2.0.36"
+millify = "^0.1.1"
+psycopg2-binary = "^2.9.10"
+kubernetes = "^31.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -37,6 +37,7 @@ rm -rf /var/lib/apt/lists/*
 
 # install PyFlink
 RUN pip3 install "apache-flink>=1.18.0,<1.18.9"
+RUN pip3 install kafka-python
 
 # add python script
 USER flink

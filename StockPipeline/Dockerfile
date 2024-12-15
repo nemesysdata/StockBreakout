@@ -6,6 +6,8 @@ FROM flink-base:latest
 
 # add python script
 USER flink
+RUN pip3 install kafka-python
+
 ADD stock_pipeline.py /opt/flink/usrlib/stock_pipeline.py
 # ADD flink-sql-connector-kafka-3.1.0-1.18.jar /opt/flink/usrlib/flink-sql-connector-kafka-3.1.0-1.18.jar
 # ADD flink-connector-jdbc-3.1.2-1.18-javadoc.jar /opt/flink/usrlib/flink-connector-jdbc-3.1.2-1.18-javadoc.jar

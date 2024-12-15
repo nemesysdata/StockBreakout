@@ -41,7 +41,7 @@ spec:
       resources:
         requests:
           storage: 10Gi
-    replicas: 1
+    replicas: 2
   postgresVersion: 15
   service:
     type: LoadBalancer

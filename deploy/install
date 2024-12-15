@@ -1,8 +1,13 @@
-#!/bin/zsh
+#!/bin/bash
+#minikube start
+#minikube addons enable metallb
+#kubectl apply -f metallb.yaml
+#sleep 5
 #
 # Adidionar Repositórios do Helm
 #
-helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.7.0/
+# helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.7.0/
+helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.10.0/
 helm repo add kafka-ui https://provectus.github.io/kafka-ui-charts
 #
 # Instalar o Cert-Manager
@@ -12,23 +17,15 @@ kubectl rollout status deployment/cert-manager -n cert-manager
 kubectl rollout status deployment/cert-manager-cainjector -n cert-manager
 kubectl rollout status deployment/cert-manager-webhook -n cert-manager
 #
-# Instalar o Postgres Operator
-#
-kubectl create ns postgres-operator
-kubens postgres-operator
-kubectl apply -f postgres-operator.yaml --server-side=true
-kubectl rollout status deployment/pgo -n postgres-operator
-#
-# Criar o DW
-#
-kubectl create ns stock-dw
-kubens stock-dw
-kubectl apply -f stock-dw.yaml
-#
 # Instalar o Flink Operator
 #
 helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator --namespace flink --create-namespace
 kubectl rollout status deployment/flink-kubernetes-operator -n flink
+
+# kubectl apply -f https://raw.githubusercontent.com/apache/flink-kubernetes-operator/refs/heads/main/helm/flink-kubernetes-operator/crds/flinkdeployments.flink.apache.org-v1.yml
+# kubectl apply -f https://raw.githubusercontent.com/apache/flink-kubernetes-operator/refs/heads/main/helm/flink-kubernetes-operator/crds/flinksessionjobs.flink.apache.org-v1.ym
+# kubectl apply -f https://raw.githubusercontent.com/apache/flink-kubernetes-operator/refs/heads/main/helm/flink-kubernetes-operator/crds/flinkstatesnapshots.flink.apache.org-v1.yml
+
 # kubectl apply -f flink-session.yaml
 #
 # Instalar o Strimzi e criar o cluster Kafka
@@ -38,6 +35,32 @@ kubens kafka
 helm upgrade --install strimzi-cluster-operator oci://quay.io/strimzi-helm/strimzi-kafka-operator
 kubectl rollout status deployment/strimzi-cluster-operator -n kafka
 kubectl apply -f kafka-kraft.yaml
+
+SERVICE_NAME=demo-kafka-demo-kafka-flink-plain-0
+NAMESPACE=kafka
+
+while true; do
+    SERVICE_IP=$(kubectl get service $SERVICE_NAME -n $NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+    if [ -z "$SERVICE_IP" ]; then
+        echo "Waiting for $SERVICE_NAME service to be assigned an external IP..."
+        sleep 10
+    else
+        break
+    fi
+done
+
 helm upgrade --install kafka-ui kafka-ui/kafka-ui -f kafkaui-values.yaml
 kubectl rollout status deployment/kafka-ui -n kafka
+#
+# Instalar o Postgres
+#
+helm install psql-dw oci://registry-1.docker.io/bitnamicharts/postgresql --namespace stock-dw --create-namespace -f postgres.yaml
+kubectl rollout status statefulset/psql-dw-postgresql -n stock-dw
+sleep 10
 
+kubectl run psql-dw-postgresql-client --rm --tty -i --restart='Never' --namespace stock-dw --image docker.io/bitnami/postgresql:17.2.0-debian-12-r2 --env="PGPASSWORD=mysecret" \
+      --command -- psql --host psql-dw-postgresql -U postgres -d postgres -p 5432 -c 'create database dw'
+#
+# Criando namespaces
+#
+kubectl create ns stock-analyzer

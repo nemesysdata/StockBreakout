@@ -11,4 +11,4 @@ yamlApplicationConfig:
         enabled: false
 service:
   type: LoadBalancer
-  loadBalancerIP: 192.168.81.101
+  # loadBalancerIP: 192.168.81.101

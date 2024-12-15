@@ -19,14 +19,15 @@ import logging
 import os
 import sys
 
+from kafka.admin import KafkaAdminClient, NewTopic
 from pyflink.datastream import StreamExecutionEnvironment, CheckpointingMode
 from pyflink.table import StreamTableEnvironment
 
-POSTGRES_HOST = "postgres-dw-ha.stock-dw.svc"
+POSTGRES_HOST = "psql-dw-postgresql.stock-dw.svc"
 POSTGRES_PORT = "5432"
 POSTGRES_DB = "dw"
 POSTGRES_USER = "postgres"
-POSTGRES_PASS = "SPNyVLLeqd3qLE8lgRw04Kua"
+POSTGRES_PASS = "mysecret"
 
 KAFKA_HOST = "demo-kafka-kafka-plain-bootstrap.kafka.svc"
 KAFKA_PORT = "9092"
@@ -41,11 +42,27 @@ def addJars(env):
       "file:///opt/flink/usrlib/postgresql-42.7.3.jar"
     )
 
+
+def create_topico(admin_client: KafkaAdminClient, topic_name: str, num_partitions: int = 1, replication_factor: int = 1):
+    # Lista todos os tópicos existentes
+    topicos_existentes = admin_client.list_topics()
+
+    if topic_name in topicos_existentes:
+        print(f"O tópico '{topic_name}' já existe.")
+    else:
+        try:
+            admin_client.create_topics([
+                NewTopic(name=topic_name, num_partitions=num_partitions, replication_factor=replication_factor)
+            ])
+            print(f"Tópico '{topic_name}' criado com sucesso.")
+        except Exception as e:
+            print(f"Não foi possível criar o tópico '{topic_name}': {e}")
+
 def createHiveTables(t_env):
     print("Creating Hive tables")
     print("  - stocks")
     t_env.execute_sql(f"""
-      CREATE TABLE stocks_intraday (
+      CREATE TABLE if not exists stocks_intraday (
         ticker        STRING,
         datetime      TIMESTAMP(3),
         openv         float,
@@ -89,47 +106,70 @@ def createHiveTables(t_env):
     
 def createKafkaTables(t_env, topicos, TOPIC):
     print("Creating Kafka tables")
+
+    admin_client = KafkaAdminClient(
+        bootstrap_servers='demo-kafka-kafka-plain-bootstrap.kafka.svc:9092',
+        client_id='FlinkJOB'
+    )
+
     for topico in topicos:
       print(f"  - {topico}")
-      t_env.execute_sql(f"""
-      CREATE TABLE {topico} (
-        ticker        STRING,
-        datetime      TIMESTAMP(3),
-        openv         float,
-        highv         float,
-        lowv          float,
-        closev        float,
-        volume        float,
-        watermark for datetime as datetime
-      ) WITH (
-        'connector' = 'kafka',
-        'topic' = '{topico.upper()}',
-        'properties.bootstrap.servers' = '{KAFKA_HOST}:{KAFKA_PORT}',
-        'properties.group.id' = 'StockPipeline_{TOPIC}',
-        'scan.startup.mode' = '{KAFKA_STARTUP_MODE}',
-        'format' = 'json'
-      )""")
 
-      t_env.execute_sql(f"""
-        CREATE TABLE if not exists diario_{topico} (
+      sql = f"""
+        CREATE TABLE {topico} (
           ticker        STRING,
-            datetime      TIMESTAMP(3),
-            openv         float,
-            highv         float,
-            lowv          float,
-            closev        float,
-            volume        float,
-            o_to_c		  float,
-            watermark for datetime as datetime
+          datetime      TIMESTAMP(3),
+          openv         float,
+          highv         float,
+          lowv          float,
+          closev        float,
+          volume        float,
+          watermark for datetime as datetime
         ) WITH (
           'connector' = 'kafka',
-          'topic' = 'DIARIO_{topico.upper()}',
+          'topic' = '{topico.upper()}',
           'properties.bootstrap.servers' = '{KAFKA_HOST}:{KAFKA_PORT}',
           'properties.group.id' = 'StockPipeline_{TOPIC}',
           'scan.startup.mode' = '{KAFKA_STARTUP_MODE}',
           'format' = 'json'
-        );
-    """)
+        )"""
+      try:
+        t_env.execute_sql(sql)
+      except Exception as e:
+        print("="*10)
+        print(f"erro ao executar\n{sql}\n{e}\n")
+        print("="*10)
+
+      print(f"  - diario_{topico}")
+      create_topico(admin_client, f"DIARIO_{topico.upper()}")
+
+      sql = f"""
+          CREATE TABLE if not exists diario_{topico} (
+              ticker        STRING,
+              datetime      TIMESTAMP(3),
+              openv         float,
+              highv         float,
+              lowv          float,
+              closev        float,
+              volume        float,
+              o_to_c		  float,
+              watermark for datetime as datetime
+          ) WITH (
+            'connector' = 'kafka',
+            'topic' = 'DIARIO_{topico.upper()}',
+            'properties.bootstrap.servers' = '{KAFKA_HOST}:{KAFKA_PORT}',
+            'properties.group.id' = 'StockPipeline_{TOPIC}',
+            'scan.startup.mode' = '{KAFKA_STARTUP_MODE}',
+            'format' = 'json'
+          );
+      """
+      try:
+        t_env.execute_sql(sql)
+      except Exception as e:
+        print("="*10)
+        print(f"erro ao executar\n{sql}\n{e}\n")
+        print("="*10)
+
 
 def main():
   STEP = os.getenv("STEP", "")
