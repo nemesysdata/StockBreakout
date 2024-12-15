@@ -30,7 +30,7 @@ tickers = dados.tickers()
 auto_refresh = st.sidebar.toggle("Auto Refresh", False)
 
 if auto_refresh:
-    st_autorefresh(interval=2000)
+    st_autorefresh(interval=1000)
 
 stocks = dados.stock_position(0)
 ticker = st.sidebar.selectbox(

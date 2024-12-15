@@ -93,7 +93,7 @@ spec:
     app: stock-deployment
   ports:
     - protocol: TCP
-      port: 80
+      port: 8501
       targetPort: 8501
 ---
 #Ingress to expose the streamlit app
@@ -105,6 +105,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
+  ingressClassName: nginx
   rules:
     - host: stock.195-154-197-175.traefik.me
       http:
@@ -115,4 +116,4 @@ spec:
               service:
                 name: stock-service
                 port:
-                  number: 80
+                  number: 8501
